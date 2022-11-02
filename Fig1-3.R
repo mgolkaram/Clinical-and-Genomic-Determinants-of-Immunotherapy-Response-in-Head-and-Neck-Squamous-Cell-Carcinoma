@@ -649,7 +649,6 @@ df %>% analyse_multivariate(
 
 
 
-#### Figure 4 ####
 
 clin.fac<-WES
 
@@ -925,6 +924,79 @@ K
 ####
 
 
+G<-read.csv('~/Box/H&N/CNV_impact.csv')
+G$ID<-gsub('-T.*','',G$ID)
+G<-G[G$ID%in%WES$Patient.ID,]
+G$loc<-paste0('chr',G$chrom,':',G$loc.start,'-',G$loc.end)
+M<-t(table(G$irAE,G$loc))
+M<-M[order(rowSums(M),decreasing = T),]
+g<-G[,c(2,3,4,6,1)]
+colnames(g)<-c("chromosome", "start", "end", "segmean","sample")
+g$segmean<-2^(g$segmean+1)
+g.res.neg<-g[g$sample%in%WES$Patient.ID[(WES$BEST_RESPONSE == 'CR' | WES$BEST_RESPONSE == 'PR') & WES$AnyVirus == 0 ],]
+g.res.pos<-g[g$sample%in%WES$Patient.ID[(WES$BEST_RESPONSE == 'CR' | WES$BEST_RESPONSE == 'PR') & WES$AnyVirus == 1 ],]
+g.non.neg<-g[g$sample%in%WES$Patient.ID[(WES$BEST_RESPONSE == 'SD' | WES$BEST_RESPONSE == 'PD') & WES$AnyVirus == 0 ],]
+g.non.pos<-g[g$sample%in%WES$Patient.ID[(WES$BEST_RESPONSE == 'SD' | WES$BEST_RESPONSE == 'PD') & WES$AnyVirus == 1 ],]
+cnFreq(g.res.neg, genome="hg19",CN_low_cutoff = 1.9,CN_high_cutoff = 2.1,facet_lab_size=2)
+cnFreq(g.non.neg, genome="hg19",CN_low_cutoff = 2,CN_high_cutoff = 2,facet_lab_size=2)
+cnFreq(g.res.pos, genome="hg19",CN_low_cutoff = 2,CN_high_cutoff = 2,facet_lab_size=2)
+cnFreq(g.non.pos, genome="hg19",CN_low_cutoff = 2,CN_high_cutoff = 2,facet_lab_size=2)
+
+
+
+
+
+segSCNA<-function(P,alt='del',start,bin=100000){
+  df<-G[G$ID%in%P,]
+  df<-df[-grep('X',df$chrom),]
+  if(alt=='del'){
+    df<-df[which((2^(1+df$seg.mean))<2^(1-0.1)),]
+  } else {
+    df<-df[which((2^(1+df$seg.mean))>2^(1+0.1)),]
+  }
+  if(nrow(df)==0){return(0)}
+  for(i in 1:nrow(df)){
+    if(9==as.numeric(df$chrom[i]) &
+       start > as.numeric(df$loc.start[i]) &
+       (start + bin) < as.numeric(df$loc.end[i])) {return(1)}
+  }
+  return(0)
+}
+
+l<-1000; j<-1; end<-40000000
+#l<-1000; j<-1; end<-140000000
+
+cn<-matrix(NA,nrow(WES),l)
+for(start in seq.default(from = 1e6,to = 	end, length.out = l)){
+  for(k in 1:nrow(WES)){
+    cn[k,j]<-as.numeric(sapply(segSCNA,start,X = WES$Patient.ID[k],alt='del'))
+  }
+  j<-j+1
+}
+
+
+par(mfrow=c(1,2))
+plot(seq.default(from = 1e6,to = end, length.out = l),colMeans(cn[WES$AnyVirus==1 & WES$Nonresponders_Responders==1,]),type='l',
+     col="#2E9FDF",lwd=2,xlab='coordinate',ylab='fraction with copy number loss', main='virus positive', ylim = c(0,0.5))
+lines(seq.default(from = 1e6,to = end, length.out = l),colMeans(cn[WES$AnyVirus==1 & WES$Nonresponders_Responders==0,]),type='l',
+     col="#E7B800",lwd=2,xlab='coordinate',ylab='fraction with copy number loss')
+legend('topright',c('Responders','Non-responders'),col=c("#2E9FDF","#E7B800"),lwd=2,bty='n')
+
+abline(v=4.6e6,lty=2)
+abline(v=9e6,lty=2)
+
+
+plot(seq.default(from = 1,to = end, length.out = l),colMeans(cn[WES$AnyVirus==0 & WES$Nonresponders_Responders==1,]),type='l',
+     col="#2E9FDF",lwd=2,xlab='coordinate',ylab='fraction with copy number loss', main='virus negative',  ylim = c(0,0.5))
+lines(seq.default(from = 1,to = end, length.out = l),colMeans(cn[WES$AnyVirus==0 & WES$Nonresponders_Responders==0,]),type='l',
+      col="#E7B800",lwd=2,xlab='coordinate',ylab='fraction with copy number loss')
+legend('bottom',c('Responders','Non-responders'),col=c("#2E9FDF","#E7B800"),lwd=2,bty='n')
+
+abline(v=4.6e6,lty=2)
+abline(v=9e6,lty=2)
+
+
+kp<-karyoploteR::plotKaryotype(genome="hg19", plot.type=2, chromosomes=c("chr9"))
 
 
 
@@ -933,8 +1005,77 @@ K
 
 
 
+require(humarray)
+
+for(i in 1:nrow(G)){
+  if(G$chrom[i]=='X')  {G$arm[i]<-NA; next}
+  G$arm[i]<-paste0(G$chrom[i],
+                   ifelse(length(grep('p',position2Cytoband(as.numeric(G$chrom[i]), as.numeric(G$loc.start[i]), units = "hg19", bands = c("major"))))>0,'p','q'),
+                   ifelse(2^(G$seg.mean[i]+1)>2,'gain','loss'))
+}
 
 
+
+library(biomaRt)
+
+ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+
+# Only use standard human chromosomes
+normal.chroms <- c(1:22, "X", "Y", "M")
+
+# Filter on HGNC symbol and chromosome, retrieve genomic location and band
+my.symbols <- c("CDKN2A", "TRAF2","NOTCH1","HLA-A",'TAP1','TERT','B2M','HLA-B','HLA-C','AKT1','TET2','STAT1','MET',"JAK2","DOCK8","KANK1","SMARCA2",
+                "PIK3CA","PTEN","CD274","CCND1","FHIT","TUSC2","VHL","FEZF2", "CADPS",  "PTPRG","RFX2","DMRT2")
+my.regions <- getBM(c("hgnc_symbol", "chromosome_name", "start_position", "end_position", "band"),
+                    filters = c("hgnc_symbol", "chromosome_name"),
+                    values = list(hgnc_symbol=my.symbols, chromosome_name=normal.chroms),
+                    mart = ensembl)
+
+SCNA<-function(P,gene,alt){
+  idx<-which(my.regions$hgnc_symbol==gene)
+  df<-G[G$ID%in%P,]
+  df<-df[-grep('X',df$chrom),]
+  if(alt=='del'){
+    df<-df[which((2^(1+df$seg.mean))<2^(1-0.1)),]
+  } else {
+    df<-df[which((2^(1+df$seg.mean))>2^(1+0.1)),]
+  }
+  if(nrow(df)==0){return(0)}
+  for(i in 1:nrow(df)){
+    if(my.regions$chromosome_name[idx]==as.numeric(df$chrom[i]) &
+       my.regions$start_position[idx] > as.numeric(df$loc.start[i]) &
+       my.regions$end_position[idx] < as.numeric(df$loc.end[i])) {return(1)}
+  }
+  return(0)
+}
+
+for(i in 1:nrow(WES)){
+  WES$CDKN2A[i]<-sapply(SCNA,gene='CDKN2A',X = WES$Patient.ID[i],alt='del')
+  WES$TRAF2[i]<-sapply(SCNA,gene='TRAF2',X = WES$Patient.ID[i],alt='del')
+  WES$NOTCH1[i]<-sapply(SCNA,gene='NOTCH1',X = WES$Patient.ID[i],alt='del')
+  WES$PIK3CA[i]<-sapply(SCNA,gene='PIK3CA',X = WES$Patient.ID[i],alt='amp')
+  WES$PTEN[i]<-sapply(SCNA,gene='PTEN',X = WES$Patient.ID[i],alt='del')
+  WES$PDL1.amp[i]<-sapply(SCNA,gene='CD274',X = WES$Patient.ID[i],alt='amp')
+  WES$PDL1.del[i]<-sapply(SCNA,gene='CD274',X = WES$Patient.ID[i],alt='del')
+  WES$PDL1[i]<-WES$PDL1.amp[i]-WES$PDL1.del[i]
+  WES$CCND1[i]<-sapply(SCNA,gene='CCND1',X = WES$Patient.ID[i],alt='amp')
+  WES$HLA1[i]<-sapply(SCNA,gene='HLA-A',X = WES$Patient.ID[i],alt='amp')
+  WES$HLA2[i]<-sapply(SCNA,gene='HLA-A',X = WES$Patient.ID[i],alt='amp')
+  WES$HLA3[i]<-sapply(SCNA,gene='HLA-A',X = WES$Patient.ID[i],alt='del')
+  WES$MET[i]<-sapply(SCNA,gene='MET',X = WES$Patient.ID[i],alt='amp')
+  WES$FHIT[i]<-sapply(SCNA,gene='FHIT',X = WES$Patient.ID[i],alt='del')
+  WES$VHL[i]<-sapply(SCNA,gene='VHL',X = WES$Patient.ID[i],alt='del')
+  WES$TUSC2[i]<-sapply(SCNA,gene='TUSC2',X = WES$Patient.ID[i],alt='del')
+  WES$FEZF2<-sapply(SCNA,gene='FEZF2',X = WES$Patient.ID[i],alt='del')
+  WES$PTPRG[i]<-sapply(SCNA,gene='PTPRG',X = WES$Patient.ID[i],alt='del')
+  WES$CADPS[i]<-sapply(SCNA,gene='CADPS',X = WES$Patient.ID[i],alt='del')
+  WES$JAK2[i]<-sapply(SCNA,gene='JAK2',X = WES$Patient.ID[i],alt='del')
+  WES$DOCK8[i]<-sapply(SCNA,gene='DOCK8',X = WES$Patient.ID[i],alt='del')
+  WES$KANK1[i]<-sapply(SCNA,gene='KANK1',X = WES$Patient.ID[i],alt='del')
+  WES$SMARCA2[i]<-sapply(SCNA,gene='SMARCA2',X = WES$Patient.ID[i],alt='del')
+  WES$RFX2[i]<-sapply(SCNA,gene='RFX2',X = WES$Patient.ID[i],alt='del')
+  
+  }
 
 
 
