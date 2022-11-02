@@ -198,7 +198,7 @@ legend('topright', legend = c('APOBEC (SBS13)','APOBEC (SBS2)',
 
 
 
-G<-read.csv('~/Box/H&N/CNV_impact.csv')
+G<-read.csv('~/PATH2FILE/H&N/CNV_impact.csv')
 G$ID<-gsub('-T.*','',G$ID)
 G<-G[G$ID%in%WES$Patient.ID,]
 G$loc<-paste0('chr',G$chrom,':',G$loc.start,'-',G$loc.end)
@@ -868,7 +868,7 @@ WES$BEST_RESPONSE <- factor(WES$BEST_RESPONSE , levels=c("CR", "PR", "SD", "PD")
 
 
 ####
-WES<-read.csv('~/Box/H&N/WES-HNSC-features.csv')
+WES<-read.csv('~/PATH2FILE/H&N/WES-HNSC-features.csv')
 clin.fac<-WES[!is.na(WES$RiskGroup),]
 clin.fac$OS<-clin.fac$OS*30; clin.fac$PFS<-clin.fac$PFS*30; clin.fac$DSS<-clin.fac$DSS*30
 clin.fac$RiskGroup[clin.fac$RiskGroup==1]<-"High"
@@ -895,7 +895,7 @@ K$plot$layers[[4]]$data$y<-0.85
 K$plot$layers[[4]]$data$x<-600
 K
 
-IMPACT<-read.csv('~/Box/H&N/IMPACT-validation.csv')
+IMPACT<-read.csv('~/PATH2FILE/H&N/IMPACT-validation.csv')
 IMPACT$RiskGroup<-"Low"
 IMPACT$RiskGroup[(IMPACT$nonsyn.TMB<2 & IMPACT$Neut.Mono.Lymp <13) | (  IMPACT$Neut.Mono.Lymp <13 & IMPACT$Smoking_Signature=="Present")]<-"Intermediate"
 IMPACT$RiskGroup[IMPACT$Neut.Mono.Lymp>13]<-"High"
