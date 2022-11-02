@@ -68,7 +68,7 @@ for(TMB.cutoff in 85:120){
   TMB.cutoff<-90
 df<-read.csv('~/Box/H&N/Merck WES samples pipeline output/Summary.csv')
 df$del.9p<-ifelse(df$tumorName%in%del.9p,1,0)
-maf<-read.delim('~/PATH2FILE/H&N/MAF.tsv') # MERCK MAF
+maf<-read.delim('~/PATH2FILE/H&N/MERCK-MAF.tsv') # MERCK MAF
 maf<-maf[maf$Variant_Classification%in%unique(maf$Variant_Classification)[c(7,13,15)],]
 
 #df$TMB<-as.numeric(table(maf$TUMOR_SAMPLE))
