@@ -1,4 +1,5 @@
-
+##### Figure 5 ######
+#### Update the path to the location of resource files: ~/Desktop/publications/H&N
 #### 70/30 CV ####
 library(randomForest)
 library(ROCR)
