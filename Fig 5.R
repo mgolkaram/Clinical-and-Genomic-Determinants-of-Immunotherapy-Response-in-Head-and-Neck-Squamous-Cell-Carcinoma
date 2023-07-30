@@ -10,6 +10,7 @@ require(randomForestSRC)
 library("survcomp")
 library(glmnet)
 require(gbm)
+require(matrixStats)
 
 WES<-read.csv('~/Desktop/publications/H&N/WES-HNSC-features.csv')
 # features<-c(
