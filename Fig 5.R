@@ -18,7 +18,7 @@ WES<-read.csv('~/Desktop/publications/H&N/WES-HNSC-features.csv')
 #     "TP53","PIK3CA","TERT.promoter","PDL1","del9q34.3","MET.amp","HLALOH","Smoking_Signature","APOBEC_Signature",
 #     "nonsyn.TMB","Indel_load",
 #     "HED","purity","ploidy",
-#     "GENDER","Age_at_IO_start","ECOG","ALCOHOL_NEVER_EVER",
+#     "SEX","Age_at_IO_start","ECOG","ALCOHOL_NEVER_EVER",
 #     "AnyVirus","ALLERGIES","PRIMARY_TUMOR_SITE","STEROIDS","ANTIBIOTICS","TOXICITY",
 #     "METASTATIC_VS_RECURRENT","Number_sites_mets","Neut.Mono.Lymp","Platelets","AUTOIMMUNE_DISEASES",
 #     "HGB","Albumin","PFS","Progression"
@@ -33,12 +33,12 @@ WES<-read.csv('~/Desktop/publications/H&N/WES-HNSC-features.csv')
 # )
 
 features<-c("TP53","PIK3CA","PDL1","del9q34.3","MET.amp","Smoking_Signature","APOBEC_Signature",
-            "nonsyn.TMB","Indel_load","Age_at_IO_start","GENDER","ECOG","AUTOIMMUNE_DISEASES",
+            "nonsyn.TMB","Indel_load","Age_at_IO_start","SEX","ECOG","AUTOIMMUNE_DISEASES",
             "METASTATIC_VS_RECURRENT","Neut.Mono.Lymp","Platelets","Albumin","INFECTION_DURING_IO",
             "ANTIBIOTICS","PRIMARY_TUMOR_SITE","HLALOH","del9p","AnyVirus",
             "OS","Overall_Survival_Event")
 features<-c("TP53","PIK3CA","PDL1","del9q34.3","MET.amp","Smoking_Signature","APOBEC_Signature",
-            "nonsyn.TMB","Indel_load","Age_at_IO_start","GENDER","ECOG","AUTOIMMUNE_DISEASES",
+            "nonsyn.TMB","Indel_load","Age_at_IO_start","SEX","ECOG","AUTOIMMUNE_DISEASES",
             "METASTATIC_VS_RECURRENT","Neut.Mono.Lymp","Platelets","Albumin","INFECTION_DURING_IO",
             "ANTIBIOTICS","PRIMARY_TUMOR_SITE","HLALOH","del9p","AnyVirus",
             "PFS","Progression")
@@ -69,7 +69,7 @@ df$MET.amp<-as.factor(df$MET.amp)
 df$ECOG<-(ifelse(df$ECOG==0,"0",'1-2')) 
 
 for(i in 1:ncol(df)){
-  if(colnames(df)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','GENDER','TP53','PIK3CA',
+  if(colnames(df)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','SEX','TP53','PIK3CA',
                           'Smoking_Signature','APOBEC_Signature','PDL1','TERT.promoter','HLALOH','del9q34.3',
                           "ANTIBIOTICS",'STEROIDS','TOXICITY','ECOG','INFECTION_DURING_IO')){
     df[,i]<-as.factor(df[,i])
@@ -413,12 +413,12 @@ require(survcomp)
 require(pROC)
 WES<-read.csv('~/Desktop/publications/H&N/WES-HNSC-features.csv')
 features<-c("TP53","PIK3CA","PDL1","del9q34.3","Smoking_Signature",
-            "nonsyn.TMB","Age_at_IO_start","GENDER","ECOG","AUTOIMMUNE_DISEASES",
+            "nonsyn.TMB","Age_at_IO_start","SEX","ECOG","AUTOIMMUNE_DISEASES",
             "METASTATIC_VS_RECURRENT","Neut.Mono.Lymp","Platelets","Albumin","INFECTION_DURING_IO",
             "ANTIBIOTICS","PRIMARY_TUMOR_SITE","HLALOH","del9p","AnyVirus",
             "OS","Overall_Survival_Event")
 features<-c("TP53","PIK3CA","PDL1","del9q34.3","Smoking_Signature",
-            "nonsyn.TMB","Age_at_IO_start","GENDER","ECOG","AUTOIMMUNE_DISEASES",
+            "nonsyn.TMB","Age_at_IO_start","SEX","ECOG","AUTOIMMUNE_DISEASES",
             "METASTATIC_VS_RECURRENT","Neut.Mono.Lymp","Platelets","Albumin","INFECTION_DURING_IO",
             "ANTIBIOTICS","PRIMARY_TUMOR_SITE","HLALOH","del9p","AnyVirus",
             "PFS","Progression")
@@ -453,7 +453,7 @@ df$AUTOIMMUNE_DISEASES<-as.factor(ifelse(df$AUTOIMMUNE_DISEASES=='Yes','Present'
 df$ECOG<-(ifelse(df$ECOG==0,"0",'1-2')) 
 
 for(i in 1:ncol(df)){
-  if(colnames(df)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','GENDER','TP53','PIK3CA',
+  if(colnames(df)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','SEX','TP53','PIK3CA',
                           'Smoking_Signature','APOBEC_Signature','PDL1','TERT.promoter','HLALOH','del9q34.3',
                           "ANTIBIOTICS",'STEROIDS','TOXICITY','ECOG','INFECTION_DURING_IO')){
     df[,i]<-as.factor(df[,i])
@@ -492,7 +492,7 @@ test.set<-tmp
 colnames(test.set)<-colnames(df)
 tmp<-rbind(df,test.set)
 for(i in 1:ncol(tmp)){
-  if(colnames(tmp)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','GENDER','TP53','PIK3CA',
+  if(colnames(tmp)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','SEX','TP53','PIK3CA',
                           'Smoking_Signature','APOBEC_Signature','PDL1','TERT.promoter','HLALOH','del9q34.3',
                           "ANTIBIOTICS",'STEROIDS','TOXICITY','ECOG','INFECTION_DURING_IO')){
     tmp[,i]<-as.factor(tmp[,i])
@@ -688,12 +688,12 @@ require(survcomp)
 require(pROC)
 WES<-read.csv('~/Desktop/publications/H&N/WES-HNSC-features.csv')
 features<-c("TP53","PIK3CA","PDL1","del9q34.3","Smoking_Signature",
-            "nonsyn.TMB","Age_at_IO_start","GENDER","ECOG","AUTOIMMUNE_DISEASES",
+            "nonsyn.TMB","Age_at_IO_start","SEX","ECOG","AUTOIMMUNE_DISEASES",
             "METASTATIC_VS_RECURRENT","Neut.Mono.Lymp","Platelets","Albumin","INFECTION_DURING_IO",
             "ANTIBIOTICS","PRIMARY_TUMOR_SITE","HLALOH","del9p","AnyVirus",
             "OS","Overall_Survival_Event")
 features<-c("TP53","PIK3CA","PDL1","del9q34.3","Smoking_Signature",
-            "nonsyn.TMB","Age_at_IO_start","GENDER","ECOG","AUTOIMMUNE_DISEASES",
+            "nonsyn.TMB","Age_at_IO_start","SEX","ECOG","AUTOIMMUNE_DISEASES",
             "METASTATIC_VS_RECURRENT","Neut.Mono.Lymp","Platelets","Albumin","INFECTION_DURING_IO",
             "ANTIBIOTICS","PRIMARY_TUMOR_SITE","HLALOH","del9p","AnyVirus",
             "PFS","Progression")
@@ -728,7 +728,7 @@ df$AUTOIMMUNE_DISEASES<-as.factor(ifelse(df$AUTOIMMUNE_DISEASES=='Yes','Present'
 df$ECOG<-(ifelse(df$ECOG==0,"0",'1-2')) 
 
 for(i in 1:ncol(df)){
-  if(colnames(df)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','GENDER','TP53','PIK3CA',
+  if(colnames(df)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','SEX','TP53','PIK3CA',
                           'Smoking_Signature','APOBEC_Signature','PDL1','TERT.promoter','HLALOH','del9q34.3',
                           "ANTIBIOTICS",'STEROIDS','TOXICITY','ECOG','INFECTION_DURING_IO')){
     df[,i]<-as.factor(df[,i])
@@ -767,7 +767,7 @@ test.set<-tmp
 colnames(test.set)<-colnames(df)
 tmp<-rbind(df,test.set)
 for(i in 1:ncol(tmp)){
-  if(colnames(tmp)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','GENDER','TP53','PIK3CA',
+  if(colnames(tmp)[i]%in%c('METASTATIC_VS_RECURRENT','AnyVirus','ALCOHOL_NEVER_EVER','SEX','TP53','PIK3CA',
                            'Smoking_Signature','APOBEC_Signature','PDL1','TERT.promoter','HLALOH','del9q34.3',
                            "ANTIBIOTICS",'STEROIDS','TOXICITY','ECOG','INFECTION_DURING_IO')){
     tmp[,i]<-as.factor(tmp[,i])
